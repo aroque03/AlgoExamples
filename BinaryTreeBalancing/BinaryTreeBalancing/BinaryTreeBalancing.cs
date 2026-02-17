@@ -271,18 +271,65 @@ namespace BinaryTreeBalancing
 
         /// <summary>
         /// Verifies that the AVL property holds for every node in the tree.
-        /// Returns true if the tree is properly balanced.
+        /// Returns true if the tree is properly balanced and all stored
+        /// heights are consistent with their subtrees.
         /// </summary>
         public bool VerifyBalance(Node node)
         {
+            int height;
+            return VerifyBalance(node, out height);
+        }
+
+        /// <summary>
+        /// Internal helper that verifies AVL balance and height consistency.
+        /// It also computes the actual height of the subtree rooted at
+        /// <paramref name="node"/> and returns it via the <paramref name="height"/> parameter.
+        /// </summary>
+        /// <param name="node">The current node to verify.</param>
+        /// <param name="height">Outputs the computed height of the subtree.</param>
+        /// <returns>
+        /// True if the subtree rooted at <paramref name="node"/> is balanced
+        /// and all stored heights are correct; otherwise, false.
+        /// </returns>
+        private bool VerifyBalance(Node node, out int height)
+        {
             if (node == null)
+            {
+                height = 0;
                 return true;
+            }
 
-            int balance = GetBalanceFactor(node);
-            if (Math.Abs(balance) > 1)
+            int leftHeight;
+            int rightHeight;
+
+            if (!VerifyBalance(node.Left, out leftHeight))
+            {
+                height = 0;
                 return false;
+            }
 
-            return VerifyBalance(node.Left) && VerifyBalance(node.Right);
+            if (!VerifyBalance(node.Right, out rightHeight))
+            {
+                height = 0;
+                return false;
+            }
+
+            int balance = leftHeight - rightHeight;
+            if (Math.Abs(balance) > 1)
+            {
+                height = 0;
+                return false;
+            }
+
+            int expectedHeight = Math.Max(leftHeight, rightHeight) + 1;
+            if (node.Height != expectedHeight)
+            {
+                height = 0;
+                return false;
+            }
+
+            height = expectedHeight;
+            return true;
         }
     }
 
